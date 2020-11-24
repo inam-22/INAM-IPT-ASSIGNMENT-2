@@ -1,0 +1,179 @@
+<html>
+  <head>
+    <title>Markssheet</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+      .customButton {
+        border: 1px solid gray;
+        padding: 2px 6px 2px 6px;
+        cursor: pointer;
+      }
+
+      .customButton:hover {
+        border: 1px solid black;
+        box-shadow: gray 2px 2px 5px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>Marksheet</h1>
+    <div>
+      <table>
+        <tr>
+          <td>
+            <table>
+              <tr>
+                <td>
+                  <span>Enter the name of student :</span>
+                </td>
+                <td>
+                  <input type="text" id="nameOfStudent" />
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <span>Enter the number of subjects : </span>
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    id="noOfSubjects"
+                    min="1"
+                    onchange="UIPopulate()"
+                    onkeyup="UIPopulate()"
+                  />
+                </td>
+              </tr>
+              <tr>
+                <td colspan="2">
+                  <span onclick="Calculate()" class="customButton"
+                    >Calculate</span
+                  >
+                </td>
+              </tr>
+            </table>
+          </td>
+          <td>
+            <table>
+              <tr>
+                <td>
+                  <span>Min Marks Subject: </span>
+                </td>
+                <td>
+                  <input type="text" id="minMarksSubject" readonly="readonly" />
+                </td>
+                <td>
+                  <span>Min Marks: </span>
+                </td>
+                <td>
+                  <input type="text" id="minMarks" readonly="readonly" />
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <span>Max Marks Subject: </span>
+                </td>
+                <td>
+                  <input type="text" id="maxMarksSubject" readonly="readonly" />
+                </td>
+                <td>
+                  <span>Max Marks: </span>
+                </td>
+                <td>
+                  <input type="text" id="maxMarks" readonly="readonly" />
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <span>Percentage : </span>
+                </td>
+                <td>
+                  <input type="text" id="percentage" readonly="readonly" />
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <hr />
+    <div>
+      <table id="inputTable"></table>
+    </div>
+  </body>
+  <script>
+    function Calculate() {
+      //YOUR CODE GOES HERE
+      var subjectList = [];
+      var noOfSubjects = $("#noOfSubjects").val();
+
+      for (i = 0; i < noOfSubjects; i++) {
+        subjectName = $("#subjectName" + i).val();
+        subjectMarksObtained = $("#subjectMarksObtained" + i).val();
+
+        var subject = new Object();
+        subject.name = subjectName;
+        subject.obtainedMarks = subjectMarksObtained;
+
+        subjectList.push(subject);
+      }
+
+      var subjectStr = JSON.stringify(subjectList);
+      console.log(subjectStr);
+
+      $.ajax({
+        method: "GET",
+        url: "http://localhost:44358/Marksheet.asmx/calculateMarksheet",
+        contentType: "application/JSON",
+        data: {
+          request: subjectStr,
+        },
+        success: function (result) {
+          var res = JSON.parse(result.d);
+          $("#minMarksSubject").val(res.minSubjectMarks);
+          $("#maxMarksSubject").val(res.maxSubjectMarks);
+          $("#minMarks").val(res.minMarks);
+          $("#maxMarks").val(res.maxMarks);
+          $("#percentage").val((res.percentage).toFixed(2)+"%");
+        },
+      });
+    }
+
+    function UIPopulate() {
+      var noOfSubjects = $("#noOfSubjects").val();
+
+      var h = "";
+      for (i = 0; i < noOfSubjects; i++) {
+        h += "<tr>";
+
+        h += "<td>";
+        h += "<span>Subject " + (i + 1) + " -> </span>";
+        h += "</td>";
+
+        h += "<td>";
+        h += "<span>Name :</span>";
+        h += "</td>";
+
+        h += "<td>";
+        h += '<input type="text" id="subjectName' + i + '"/>';
+        h += "</td>";
+
+        h += "<td>";
+        h += "<span>Marks Obtained :</span>";
+        h += "</td>";
+
+        h += "<td>";
+        h +=
+          '<input type="number" min="0" max="100" id="subjectMarksObtained' +
+          i +
+          '"/>';
+        h += "</td>";
+
+        h += "</tr>";
+      }
+
+      $("#inputTable").html(h);
+    }
+  </script>
+</html>
